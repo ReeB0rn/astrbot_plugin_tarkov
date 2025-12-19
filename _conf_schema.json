@@ -1,0 +1,19 @@
+{
+    "item_task":{
+        "type":"object",
+        "description":"物品更新定时任务配置项",
+        "items":{
+            "item_task_condition": {
+                "type": "bool",
+                "description": "物品更新定时任务开关",
+                "default":true
+            },
+            "item_task_period":{
+                "type":"int",
+                "description":"物品更新价格时间-默认5分钟",
+                "init":"从tarkov-dev网站提供的API中拉去物品价格的时间周期，默认且官方推荐为5分钟，过高的请求频率会导致禁止访问",
+                "default":5 
+            }
+        }
+    }
+}
