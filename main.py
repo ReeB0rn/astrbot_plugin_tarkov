@@ -3,6 +3,7 @@ from astrbot.api.star import Context, Star, register
 from astrbot.api import AstrBotConfig
 from astrbot.api import logger
 from . import market
+from . import tarkov_task
 
 @register("tarkov", "ReBorn", "塔科夫插件", "1.0.0")
 class MyPlugin(Star):
@@ -16,7 +17,7 @@ class MyPlugin(Star):
     async def initialize(self):
         """可选择实现异步的插件初始化方法，当实例化该插件类之后会自动调用该方法。"""
         config = self.config
-        await market.scheduled_task(config);
+        await tarkov_task.scheduled_task(config);
 
     # 注册指令的装饰器。指令名为 helloworld。注册成功后，发送 `/helloworld` 就会触发这个指令，并回复 `你好, {user_name}!`
     @filter.command("helloworld")
@@ -27,19 +28,23 @@ class MyPlugin(Star):
         message_chain = event.get_messages() # 用户所发的消息的消息链 # from astrbot.api.message_components import *
         logger.info(message_chain)
         yield event.plain_result(f"Hello!, {user_name}, 你发了 {message_str}!") # 发送一条纯文本消息
-    
-    @filter.command_group("市场")
-    def market(self):
-        """跳蚤市场相关指令"""
-        pass
 
     # TODO 查询命令更改
-    @filter.command("market")
+    @filter.command("物品")
     async def ping(self, event: AstrMessageEvent, name: str=""):
         """通过名称模糊查询跳蚤价格"""
         if(not name):
             yield event.plain_result("请提供物品名称");
             return
+        try:
+            item = await market.get_item_info(name)
+        except FileNotFoundError as e:
+            yield event.plain_result(f"{e}")
+            return
+        if(item):
+            yield event.plain_result(f"物品信息: {item}")
+        else:
+            yield event.plain_result("未找到物品信息")
 
     async def terminate(self):
         """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""
